@@ -1,21 +1,29 @@
 const RoadmapView = (() => {
   function getServiceNumber() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("id");
+    return new URLSearchParams(window.location.search).get("id");
   }
+
+  const ASPIRATION_LABELS = {
+    SeniorTechExpert: "Senior Tech Expert",
+    UnitLeader:       "Unit Leader",
+    OfficerConversion:"Officer Conversion",
+    TransitionOut:    "Transition Out"
+  };
+
+  const APTITUDE_CSS = { High: "aptitude-high", Medium: "aptitude-medium", Low: "aptitude-low" };
+  const COMPETENCY_CSS = {
+    "Software Engineering":  "comp-se",
+    "Cloud Engineering":     "comp-ce",
+    "Data Analytics and AI": "comp-da",
+    "Product Management":    "comp-pm"
+  };
 
   function renderFlags(flags) {
     const container = document.getElementById("flags-container");
-    if (!container) return;
-
-    if (!flags || flags.length === 0) {
-      container.innerHTML = "";
-      return;
-    }
-
+    if (!container || !flags || flags.length === 0) { if (container) container.innerHTML = ""; return; }
     container.innerHTML = flags.map(f => `
       <div class="flag-banner flag-${f.type}">
-        <span class="flag-icon">${f.type === "over" ? "🔴" : "⚠️"}</span>
+        <span class="flag-icon">${f.type === "over" ? "🔴" : f.type === "warning" ? "⚠️" : "ℹ️"}</span>
         ${f.message}
       </div>
     `).join("");
@@ -25,12 +33,20 @@ const RoadmapView = (() => {
     const el = document.getElementById("member-profile");
     if (!el) return;
 
-    const ASPIRATION_LABELS = {
-      SeniorTechExpert: "Senior Tech Expert",
-      UnitLeader: "Unit Leader",
-      OfficerConversion: "Officer Conversion",
-      TransitionOut: "Transition Out"
-    };
+    const historyHtml = (member.posting_history || []).length > 0 ? `
+      <div class="posting-history">
+        <label>Posting History</label>
+        <div class="history-list">
+          ${member.posting_history.map(ph => `
+            <div class="history-item">
+              <span class="rank-badge rank-${ph.rank.toLowerCase()}">${ph.rank}</span>
+              <span class="history-title">${ph.appointment}</span>
+              <span class="history-dates">${ph.start_date} – ${ph.end_date}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    ` : "";
 
     el.innerHTML = `
       <div class="profile-grid">
@@ -47,8 +63,8 @@ const RoadmapView = (() => {
           <span class="rank-badge rank-${member.current_rank.toLowerCase()}">${member.current_rank}</span>
         </div>
         <div class="profile-field">
-          <label>Specialisation</label>
-          <span>${member.specialisation}</span>
+          <label>Competency</label>
+          <span class="comp-badge ${COMPETENCY_CSS[member.competency] || ''}">${member.competency}</span>
         </div>
         <div class="profile-field">
           <label>Current Appointment</label>
@@ -63,6 +79,10 @@ const RoadmapView = (() => {
           <span class="rank-badge rank-${member.potential_rating.toLowerCase()}">${member.potential_rating}</span>
         </div>
         <div class="profile-field">
+          <label>Leadership Aptitude</label>
+          <span class="aptitude-badge ${APTITUDE_CSS[member.leadership_aptitude] || ''}">${member.leadership_aptitude}</span>
+        </div>
+        <div class="profile-field">
           <label>End of Service</label>
           <span>${member.end_of_service_date}</span>
         </div>
@@ -73,6 +93,7 @@ const RoadmapView = (() => {
           <p>${member.supervisor_notes}</p>
         </div>
       ` : ""}
+      ${historyHtml}
     `;
   }
 
@@ -80,23 +101,25 @@ const RoadmapView = (() => {
     const container = document.getElementById("roadmap-container");
     if (!container) return;
 
-    const items = new vis.DataSet(visData.items);
+    const items  = new vis.DataSet(visData.items);
     const groups = new vis.DataSet(visData.groups);
 
+    // Default view: 5 years before today → 12 years ahead
     const today = new Date();
-    const minDate = new Date(today);
-    minDate.setFullYear(minDate.getFullYear() - 1);
+    const viewStart = new Date(today); viewStart.setFullYear(viewStart.getFullYear() - 5);
+    const viewEnd   = new Date(today); viewEnd.setFullYear(viewEnd.getFullYear() + 12);
 
     const options = {
-      stack: false,
+      stack:           false,
       showCurrentTime: true,
-      orientation: { axis: "top" },
-      zoomMin: 1000 * 60 * 60 * 24 * 30,
-      zoomMax: 1000 * 60 * 60 * 24 * 365 * 25,
-      start: minDate,
-      groupOrder: "id",
-      tooltip: { followMouse: true, overflowMethod: "flip" },
-      margin: { item: { horizontal: 0, vertical: 4 } }
+      orientation:     { axis: "top" },
+      start:           viewStart,
+      end:             viewEnd,
+      zoomMin:         1000 * 60 * 60 * 24 * 30,          // 1 month
+      zoomMax:         1000 * 60 * 60 * 24 * 365 * 35,    // 35 years
+      groupOrder:      "id",
+      tooltip:         { followMouse: true, overflowMethod: "flip" },
+      margin:          { item: { horizontal: 0, vertical: 4 } }
     };
 
     new vis.Timeline(container, items, groups, options);
@@ -106,12 +129,13 @@ const RoadmapView = (() => {
     const el = document.getElementById("chart-legend");
     if (!el) return;
     el.innerHTML = `
-      <div class="legend-item"><span class="legend-swatch appt-current"></span> Current appointment</div>
+      <div class="legend-item"><span class="legend-swatch appt-historical-sw"></span> Historical</div>
+      <div class="legend-item"><span class="legend-swatch appt-current-sw"></span> Current</div>
       <div class="legend-item"><span class="legend-swatch appt-projected appt-cat-technical"></span> Technical (projected)</div>
       <div class="legend-item"><span class="legend-swatch appt-projected appt-cat-leadership"></span> Leadership (projected)</div>
-      <div class="legend-item"><span class="legend-swatch appt-projected appt-cat-training"></span> Training (projected)</div>
       <div class="legend-item"><span class="legend-swatch appt-projected appt-cat-staff"></span> Staff (projected)</div>
-      <div class="legend-item"><span class="legend-swatch rank-milestone-swatch"></span> Rank eligible marker</div>
+      <div class="legend-item"><span class="legend-swatch appt-lateral appt-cat-leadership"></span> Lateral / Stabilising</div>
+      <div class="legend-item"><span class="legend-swatch rank-milestone-swatch"></span> Rank promotion</div>
       <div class="legend-item"><span class="legend-swatch eos-marker-swatch"></span> End of service</div>
     `;
   }
@@ -149,6 +173,7 @@ const RoadmapView = (() => {
     } catch (err) {
       document.getElementById("flags-container").innerHTML =
         `<div class="flag-banner flag-over">Error loading roadmap: ${err.message}</div>`;
+      console.error(err);
     }
   }
 

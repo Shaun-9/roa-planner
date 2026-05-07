@@ -11,133 +11,178 @@ const RulesEngine = (() => {
     return d;
   }
 
+  const APTITUDE_LEVEL = { "Low": 0, "Medium": 1, "High": 2 };
+
+  function passesLeadershipGate(appointment, member) {
+    if (appointment.requires_leadership === "medium") {
+      return (APTITUDE_LEVEL[member.leadership_aptitude] || 0) >= 1;
+    }
+    return true;
+  }
+
+  function selectAppointment(competencyAppts, targetRank, member, usedTitles) {
+    const prefs = RULES.aspiration_paths[member.aspiration] || { preferred: [], avoid: [] };
+
+    let candidates = competencyAppts.filter(a =>
+      a.rank === targetRank &&
+      passesLeadershipGate(a, member) &&
+      !prefs.avoid.includes(a.category)
+    );
+
+    // Prefer appointments not already used in this career (avoid repetition in projections)
+    const fresh = candidates.filter(a => !usedTitles.has(a.title));
+    if (fresh.length > 0) candidates = fresh;
+
+    // Score by aspiration preference: preferred=2, neutral=1
+    candidates = candidates
+      .map(a => ({ ...a, score: prefs.preferred.includes(a.category) ? 2 : 1 }))
+      .sort((a, b) => b.score - a.score);
+
+    return candidates[0] || null;
+  }
+
   function buildRoadmap(member, appointments) {
     const today = new Date();
     const eos = new Date(member.end_of_service_date);
     const rankOrder = RULES.rank_order;
 
     const currentRankIdx = rankOrder.indexOf(member.current_rank);
-    const potentialIdx = rankOrder.indexOf(member.potential_rating);
+    const potentialIdx   = rankOrder.indexOf(member.potential_rating);
+    const me7Idx         = rankOrder.indexOf("ME7");
 
-    const serviceStart = new Date(member.service_start_date);
-    const rankDate = new Date(member.rank_date);
+    // Cap effective potential at ME6 if leadership aptitude is Low (cannot reach ME7)
+    const memberAptitude = APTITUDE_LEVEL[member.leadership_aptitude] || 0;
+    const effectivePotentialIdx = (potentialIdx === me7Idx && memberAptitude < 1)
+      ? me7Idx - 1
+      : potentialIdx;
+
+    const rankDate  = new Date(member.rank_date);
     const apptStart = new Date(member.appointment_start_date);
 
-    const currentTIS = monthsBetween(serviceStart, today);
-    const currentTIG = monthsBetween(rankDate, today);
+    const currentTIG      = monthsBetween(rankDate, today);
     const apptMonthsServed = monthsBetween(apptStart, today);
 
-    const maxAppt = RULES.appointment_rules.max_duration_months;
-    const warnAppt = RULES.appointment_rules.warning_threshold_months;
+    const minAppt  = RULES.appointment_rules.min_duration_months;   // 36
+    const maxAppt  = RULES.appointment_rules.max_duration_months;   // 72
+    const warnAppt = RULES.appointment_rules.warning_threshold_months; // 60
 
-    const roadmap = {
-      member,
-      flags: [],
-      appointments: [],
-      events: []
-    };
+    const roadmap = { member, flags: [], appointments: [], events: [] };
 
-    // Flag current appointment tenure
+    // ── Historical postings ──────────────────────────────────
+    (member.posting_history || []).forEach(ph => {
+      roadmap.appointments.push({
+        label:    ph.appointment,
+        rank:     ph.rank,
+        start:    new Date(ph.start_date),
+        end:      new Date(ph.end_date),
+        status:   "historical",
+        category: "historical"
+      });
+    });
+
+    // ── Tenure flags ─────────────────────────────────────────
     if (apptMonthsServed >= maxAppt) {
       roadmap.flags.push({
         type: "over",
-        message: `Appointment tenure exceeded: ${member.name} has been in "${member.current_appointment}" for ${apptMonthsServed} months (limit: ${maxAppt} months). Immediate rotation required.`
+        message: `Appointment tenure exceeded: "${member.current_appointment}" — ${apptMonthsServed} months served (limit: ${maxAppt} months). Immediate rotation required.`
       });
     } else if (apptMonthsServed >= warnAppt) {
       roadmap.flags.push({
         type: "warning",
-        message: `Approaching tenure limit: ${member.name} has been in "${member.current_appointment}" for ${apptMonthsServed} months. Rotation recommended within ${maxAppt - apptMonthsServed} months.`
+        message: `Approaching tenure limit: "${member.current_appointment}" — ${apptMonthsServed} months served. Plan rotation within ${maxAppt - apptMonthsServed} months.`
       });
     }
 
-    // Current appointment block — extends to max 36 months from start, capped at EOS
-    const currentApptEnd = addMonths(apptStart, maxAppt);
-    const clampedCurrentEnd = currentApptEnd > eos ? eos : currentApptEnd;
+    // ── ME7 pathway advisory for Low leadership aptitude ─────
+    if (potentialIdx === me7Idx && memberAptitude < 1) {
+      roadmap.flags.push({
+        type: "info",
+        message: `ME7 pathway not recommended: Low leadership aptitude assessment. Career planning is capped at ME6. CO 8X is also not available.`
+      });
+    }
+
+    // ── Determine current appointment end ────────────────────
+    let cursorDate;
+
+    if (currentRankIdx < effectivePotentialIdx) {
+      // Below effective peak — promotion is on the horizon
+      // Must satisfy both: TIG ≥ 36 months AND appointment ≥ 36 months
+      const monthsToTIG  = Math.max(0, minAppt - currentTIG);
+      const monthsToAppt = Math.max(0, minAppt - apptMonthsServed);
+      const monthsToPromotion = Math.max(monthsToTIG, monthsToAppt);
+      const promotionDate = addMonths(today, monthsToPromotion);
+      cursorDate = promotionDate >= eos ? eos : promotionDate;
+    } else {
+      // At or past effective peak — show remaining time in appointment (max 72 months from start)
+      const apptEndMax = addMonths(apptStart, maxAppt);
+      cursorDate = apptEndMax >= eos ? eos : apptEndMax;
+    }
 
     roadmap.appointments.push({
-      label: member.current_appointment,
-      rank: member.current_rank,
-      start: apptStart,
-      end: clampedCurrentEnd,
-      status: "current",
+      label:    member.current_appointment,
+      rank:     member.current_rank,
+      start:    apptStart,
+      end:      cursorDate,
+      status:   "current",
       category: "current"
     });
 
-    // Walk forward through rank promotions
-    let cursorDate = clampedCurrentEnd;
+    // ── Walk forward ─────────────────────────────────────────
+    const competencyAppts = appointments.filter(a => a.competency === member.competency);
+    const usedTitles = new Set([member.current_appointment]);
     let cursorRankIdx = currentRankIdx;
-    let accumulatedTIS = currentTIS;
-    let accumulatedTIG = currentTIG;
 
-    while (cursorDate < eos && cursorRankIdx < potentialIdx && cursorRankIdx < rankOrder.length - 1) {
-      const nextRank = rankOrder[cursorRankIdx + 1];
-      const threshold = RULES.rank_thresholds[nextRank];
-      if (!threshold) break;
+    while (cursorDate < eos) {
+      if (cursorRankIdx < effectivePotentialIdx) {
+        // ── Upward progression ────────────────────────────
+        const nextRank = rankOrder[cursorRankIdx + 1];
+        const nextAppt = selectAppointment(competencyAppts, nextRank, member, usedTitles);
+        if (!nextAppt) break;
 
-      const monthsToTIS = Math.max(0, threshold.min_tis_months - accumulatedTIS);
-      const monthsToTIG = Math.max(0, threshold.min_tig_months - accumulatedTIG);
-      const monthsToEligible = Math.max(monthsToTIS, monthsToTIG);
-
-      const promotionDate = addMonths(cursorDate, monthsToEligible);
-      if (promotionDate >= eos) break;
-
-      roadmap.events.push({
-        type: "rank_eligible",
-        rank: nextRank,
-        fromRank: rankOrder[cursorRankIdx],
-        date: promotionDate
-      });
-
-      // Select next appointment based on aspiration + specialisation + rank band
-      const aspirationPrefs = RULES.aspiration_paths[member.aspiration] || { preferred: [], avoid: [] };
-      const nextRankIdx = cursorRankIdx + 1;
-
-      let candidates = appointments.filter(a => {
-        const minIdx = rankOrder.indexOf(a.min_rank);
-        const maxIdx = rankOrder.indexOf(a.max_rank);
-        return (
-          nextRankIdx >= minIdx &&
-          nextRankIdx <= maxIdx &&
-          (a.specialisation === member.specialisation || a.specialisation === "Any") &&
-          !aspirationPrefs.avoid.includes(a.category)
-        );
-      });
-
-      // Score: preferred category = 2, neutral = 1
-      candidates = candidates
-        .map(a => ({ ...a, score: aspirationPrefs.preferred.includes(a.category) ? 2 : 1 }))
-        .sort((a, b) => b.score - a.score);
-
-      // Fallback: relax specialisation filter
-      if (candidates.length === 0) {
-        candidates = appointments.filter(a => {
-          const minIdx = rankOrder.indexOf(a.min_rank);
-          const maxIdx = rankOrder.indexOf(a.max_rank);
-          return nextRankIdx >= minIdx && nextRankIdx <= maxIdx;
+        roadmap.events.push({
+          type:     "rank_eligible",
+          rank:     nextRank,
+          fromRank: rankOrder[cursorRankIdx],
+          date:     cursorDate
         });
+
+        const apptEnd    = addMonths(cursorDate, nextAppt.duration_months);
+        const clampedEnd = apptEnd >= eos ? eos : apptEnd;
+
+        roadmap.appointments.push({
+          label:    nextAppt.title,
+          rank:     nextRank,
+          start:    cursorDate,
+          end:      clampedEnd,
+          status:   "projected",
+          category: nextAppt.category
+        });
+
+        usedTitles.add(nextAppt.title);
+        cursorDate = clampedEnd;
+        cursorRankIdx++;
+
+      } else {
+        // ── Lateral / stabilising at peak rank ────────────
+        const lateralAppt = selectAppointment(competencyAppts, rankOrder[cursorRankIdx], member, usedTitles);
+        if (!lateralAppt) break;
+
+        const lateralEnd = addMonths(cursorDate, lateralAppt.duration_months);
+        const clampedEnd = lateralEnd >= eos ? eos : lateralEnd;
+        if (clampedEnd <= cursorDate) break;
+
+        roadmap.appointments.push({
+          label:    lateralAppt.title,
+          rank:     rankOrder[cursorRankIdx],
+          start:    cursorDate,
+          end:      clampedEnd,
+          status:   "lateral",
+          category: lateralAppt.category
+        });
+
+        usedTitles.add(lateralAppt.title);
+        cursorDate = clampedEnd;
       }
-
-      if (candidates.length === 0) break;
-
-      const chosen = candidates[0];
-      const nextApptEnd = addMonths(promotionDate, chosen.duration_months);
-      const clampedEnd = nextApptEnd > eos ? eos : nextApptEnd;
-
-      roadmap.appointments.push({
-        label: chosen.title,
-        rank: nextRank,
-        start: promotionDate,
-        end: clampedEnd,
-        status: "projected",
-        category: chosen.category
-      });
-
-      const monthsInAppt = monthsBetween(promotionDate, clampedEnd);
-      accumulatedTIS = threshold.min_tis_months + monthsBetween(cursorDate, promotionDate) + monthsInAppt;
-      accumulatedTIG = monthsInAppt;
-
-      cursorDate = clampedEnd;
-      cursorRankIdx += 1;
     }
 
     return roadmap;

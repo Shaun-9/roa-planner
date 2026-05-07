@@ -1,17 +1,25 @@
 const RoadmapBuilder = (() => {
   function formatDate(date) {
-    const d = new Date(date);
-    return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+    return new Date(date).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
   }
 
   function toVisDataset(roadmap) {
     const rankOrder = RULES.rank_order;
-    const currentIdx = rankOrder.indexOf(roadmap.member.current_rank);
-    const potentialIdx = rankOrder.indexOf(roadmap.member.potential_rating);
 
-    // Groups: one swimlane per rank from current to potential
+    // Collect all ranks used across historical + current + projected appointments
+    const usedRankIndices = roadmap.appointments
+      .map(a => rankOrder.indexOf(a.rank))
+      .filter(i => i >= 0);
+
+    const minRankIdx = Math.min(...usedRankIndices);
+    const maxRankIdx = Math.max(
+      ...usedRankIndices,
+      rankOrder.indexOf(roadmap.member.potential_rating)
+    );
+
+    // Groups = one swimlane per rank in range
     const groups = [];
-    for (let i = currentIdx; i <= potentialIdx; i++) {
+    for (let i = minRankIdx; i <= maxRankIdx; i++) {
       groups.push({ id: rankOrder[i], content: rankOrder[i] });
     }
 
@@ -20,34 +28,41 @@ const RoadmapBuilder = (() => {
 
     // Appointment blocks
     roadmap.appointments.forEach(appt => {
-      const cssClass = appt.status === "current"
-        ? "appt-current"
-        : `appt-projected appt-cat-${appt.category.toLowerCase()}`;
+      let cssClass;
+      const cat = (appt.category || "").toLowerCase();
+      switch (appt.status) {
+        case "historical": cssClass = "appt-historical";                         break;
+        case "current":    cssClass = "appt-current";                            break;
+        case "projected":  cssClass = `appt-projected appt-cat-${cat}`;          break;
+        case "lateral":    cssClass = `appt-lateral appt-cat-${cat}`;            break;
+        default:           cssClass = "appt-projected";
+      }
 
       const durationMonths = RulesEngine.monthsBetween(appt.start, appt.end);
+      const statusLabel = appt.status.charAt(0).toUpperCase() + appt.status.slice(1);
 
       items.push({
-        id: itemId++,
-        group: appt.rank,
-        content: appt.label,
-        start: new Date(appt.start),
-        end: new Date(appt.end),
+        id:        itemId++,
+        group:     appt.rank,
+        content:   appt.label,
+        start:     new Date(appt.start),
+        end:       new Date(appt.end),
         className: cssClass,
-        title: `<strong>${appt.label}</strong><br>${appt.rank} · ${appt.category}<br>${formatDate(appt.start)} – ${formatDate(appt.end)}<br>${durationMonths} months`
+        title:     `<strong>${appt.label}</strong><br>${appt.rank} · ${statusLabel}<br>${formatDate(appt.start)} – ${formatDate(appt.end)}<br>${durationMonths} months`
       });
     });
 
-    // Rank promotion eligibility markers
+    // Rank promotion markers
     roadmap.events.forEach(evt => {
       if (evt.type === "rank_eligible") {
         items.push({
-          id: itemId++,
-          group: evt.fromRank,
-          content: `▲ ${evt.rank}`,
-          start: new Date(evt.date),
-          type: "point",
+          id:        itemId++,
+          group:     evt.fromRank,
+          content:   `▲ ${evt.rank}`,
+          start:     new Date(evt.date),
+          type:      "point",
           className: "rank-milestone",
-          title: `Earliest eligible for <strong>${evt.rank}</strong>: ${formatDate(evt.date)}`
+          title:     `Promoted to <strong>${evt.rank}</strong>: ${formatDate(evt.date)}`
         });
       }
     });
@@ -55,13 +70,13 @@ const RoadmapBuilder = (() => {
     // EOS marker on the highest rank group
     const topRank = groups[groups.length - 1].id;
     items.push({
-      id: itemId++,
-      group: topRank,
-      content: "EOS",
-      start: new Date(roadmap.member.end_of_service_date),
-      type: "point",
+      id:        itemId++,
+      group:     topRank,
+      content:   "EOS",
+      start:     new Date(roadmap.member.end_of_service_date),
+      type:      "point",
       className: "eos-marker",
-      title: `End of Service: ${formatDate(roadmap.member.end_of_service_date)}`
+      title:     `End of Service: ${formatDate(roadmap.member.end_of_service_date)}`
     });
 
     return { groups, items, flags: roadmap.flags };
