@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROA — Member List</title>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="navbar-brand">ROA <span>Planner</span></span>
+    <span class="navbar-sub">Route of Advancement — Military Expert Scheme</span>
+  </nav>
+
+  <div class="page-container">
+
+    <div class="page-header">
+      <h1>Member Profiles</h1>
+      <p>Select a member to view their career roadmap.</p>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input type="text" id="search-input" placeholder="Search by name, service no. or specialisation…" />
+
+        <select id="rank-filter">
+          <option value="">All Ranks</option>
+          <option value="me1">ME1</option>
+          <option value="me2">ME2</option>
+          <option value="me3">ME3</option>
+          <option value="me4">ME4</option>
+          <option value="me5">ME5</option>
+          <option value="me6">ME6</option>
+          <option value="me7">ME7</option>
+          <option value="me8">ME8</option>
+        </select>
+
+        <span class="member-count" id="member-count">Loading…</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Service No.</th>
+            <th>Name</th>
+            <th>Rank</th>
+            <th>Specialisation</th>
+            <th>Aspiration</th>
+            <th>Max Rank</th>
+            <th>EOS Date</th>
+          </tr>
+        </thead>
+        <tbody id="member-tbody">
+          <tr><td colspan="7" class="empty-state">Loading members…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Load order matters: config → data → rules → client -->
+  <script src="config.js"></script>
+  <script src="data/mock_data.js"></script>
+  <script src="data/rules.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/sharepoint.js"></script>
+  <script src="js/data_client.js"></script>
+  <script src="js/member_list.js"></script>
+
+</body>
+</html>

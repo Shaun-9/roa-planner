@@ -1,0 +1,277 @@
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #f4f6fb;
+  min-height: 100vh;
+}
+
+a { color: #2563eb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Nav ── */
+.navbar {
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  gap: 16px;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.navbar-brand span { color: #60a5fa; }
+
+.navbar-sub {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ── Page Shell ── */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.page-header p {
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* ── Card ── */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+/* ── Member List ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.toolbar input[type="text"],
+.toolbar select {
+  padding: 7px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  color: #1a1a2e;
+  outline: none;
+}
+
+.toolbar input[type="text"] { width: 220px; }
+.toolbar input[type="text"]:focus,
+.toolbar select:focus { border-color: #2563eb; }
+
+.member-count {
+  margin-left: auto;
+  font-size: 13px;
+  color: #64748b;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #f8faff; }
+
+.empty-state, .error-state {
+  text-align: center;
+  padding: 32px;
+  color: #94a3b8;
+}
+
+.error-state { color: #ef4444; }
+
+/* ── Rank Badges ── */
+.rank-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.rank-me1 { background: #e0f2fe; color: #0369a1; }
+.rank-me2 { background: #dbeafe; color: #1d4ed8; }
+.rank-me3 { background: #ede9fe; color: #6d28d9; }
+.rank-me4 { background: #fef9c3; color: #854d0e; }
+.rank-me5 { background: #fed7aa; color: #9a3412; }
+.rank-me6 { background: #fecaca; color: #991b1b; }
+.rank-me7 { background: #d1fae5; color: #065f46; }
+.rank-me8 { background: #1a1a2e; color: #fff; }
+
+/* ── Member Profile ── */
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.profile-field { display: flex; flex-direction: column; gap: 4px; }
+.profile-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
+.profile-field span { font-size: 14px; color: #1a1a2e; }
+
+.supervisor-notes { margin-top: 16px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+.supervisor-notes label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; display: block; margin-bottom: 6px; }
+.supervisor-notes p { color: #475569; line-height: 1.6; }
+
+/* ── Flags ── */
+.flag-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.flag-warning { background: #fefce8; border: 1px solid #fde047; color: #854d0e; }
+.flag-over    { background: #fff1f2; border: 1px solid #fca5a5; color: #991b1b; }
+.flag-icon    { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Roadmap Chart ── */
+#roadmap-container {
+  height: 360px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+/* vis.js Timeline overrides */
+.vis-timeline { border: none !important; font-family: inherit !important; }
+.vis-label { font-weight: 600 !important; font-size: 12px !important; color: #64748b !important; }
+.vis-current-time { background: #2563eb !important; opacity: 0.6; }
+.vis-time-axis .vis-text { color: #94a3b8 !important; font-size: 11px !important; }
+
+/* Appointment blocks */
+.vis-item.appt-current .vis-item-content { font-weight: 600; }
+.vis-item.appt-current { background: #2563eb !important; border-color: #1d4ed8 !important; color: #fff !important; border-radius: 4px !important; }
+
+.vis-item.appt-projected { border-style: dashed !important; border-radius: 4px !important; }
+.vis-item.appt-cat-technical  { background: #dbeafe !important; border-color: #2563eb !important; color: #1e40af !important; }
+.vis-item.appt-cat-leadership { background: #d1fae5 !important; border-color: #059669 !important; color: #064e3b !important; }
+.vis-item.appt-cat-training   { background: #fef9c3 !important; border-color: #ca8a04 !important; color: #713f12 !important; }
+.vis-item.appt-cat-staff      { background: #ede9fe !important; border-color: #7c3aed !important; color: #4c1d95 !important; }
+
+/* Rank milestone markers */
+.vis-item.rank-milestone { background: none !important; border: none !important; color: #f97316 !important; font-weight: 700 !important; font-size: 12px !important; }
+.vis-item.rank-milestone .vis-item-dot { background: #f97316 !important; border-color: #f97316 !important; }
+
+/* EOS marker */
+.vis-item.eos-marker { background: none !important; border: none !important; color: #94a3b8 !important; font-size: 11px !important; }
+.vis-item.eos-marker .vis-item-dot { background: #94a3b8 !important; border-color: #94a3b8 !important; }
+
+/* ── Legend ── */
+#chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 28px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-swatch.appt-current       { background: #2563eb; }
+.legend-swatch.appt-cat-technical  { background: #dbeafe; border: 2px dashed #2563eb; }
+.legend-swatch.appt-cat-leadership { background: #d1fae5; border: 2px dashed #059669; }
+.legend-swatch.appt-cat-training   { background: #fef9c3; border: 2px dashed #ca8a04; }
+.legend-swatch.appt-cat-staff      { background: #ede9fe; border: 2px dashed #7c3aed; }
+.legend-swatch.rank-milestone-swatch { background: #f97316; width: 10px; height: 10px; border-radius: 50%; }
+.legend-swatch.eos-marker-swatch   { background: #94a3b8; width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── Back link ── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.back-link:hover { color: #2563eb; }
+
+/* ── Error page ── */
+.error-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  font-size: 16px;
+  color: #64748b;
+}

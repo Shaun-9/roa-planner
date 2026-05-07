@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Roadmap — ROA</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="vendor/vis-timeline.min.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="navbar-brand">ROA <span>Planner</span></span>
+    <span class="navbar-sub">Route of Advancement — Military Expert Scheme</span>
+  </nav>
+
+  <div class="page-container">
+
+    <a class="back-link" href="index.html">← Back to member list</a>
+
+    <div class="page-header">
+      <h1 id="page-title">Career Roadmap</h1>
+    </div>
+
+    <!-- Flags (tenure warnings, errors) -->
+    <div id="flags-container"></div>
+
+    <!-- Member profile summary -->
+    <div class="card">
+      <div class="card-title">Profile</div>
+      <div id="member-profile">Loading…</div>
+    </div>
+
+    <!-- Swimlane chart -->
+    <div class="card">
+      <div class="card-title">Career Timeline</div>
+      <div id="roadmap-container"></div>
+      <div id="chart-legend"></div>
+    </div>
+
+  </div>
+
+  <!-- Load order: config → data → rules → engine → builder → chart -->
+  <script src="config.js"></script>
+  <script src="data/mock_data.js"></script>
+  <script src="data/rules.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/sharepoint.js"></script>
+  <script src="js/data_client.js"></script>
+  <script src="js/rules_engine.js"></script>
+  <script src="js/roadmap_builder.js"></script>
+  <script src="vendor/vis-timeline.min.js"></script>
+  <script src="js/roadmap.js"></script>
+
+</body>
+</html>

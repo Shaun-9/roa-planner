@@ -1,0 +1,15 @@
+# Environment / secrets
+.env
+.env.local
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor folders
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
