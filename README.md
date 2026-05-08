@@ -84,9 +84,7 @@ All personnel belong to one of four competency tracks:
 | Warning threshold | 5 years (60 months) — plan rotation |
 | Minimum TIG before promotion | 36 months at current rank |
 | Lateral appointments | Must be a different appointment from all prior postings |
-| **Low potential** | Career ceiling ME5 — no upward projection beyond ME5 |
-| **Medium potential** | Career ceiling ME6 — projects to ME6 then lateral |
-| **High potential** | Career ceiling ME7 — full upward projection |
+| **CEP** | Career Employment Potential — rank ceiling (ME4–ME8). Engine projects upward to CEP rank then laterals |
 | CO 8X eligibility | Medium or High leadership aptitude required |
 | ME7 appointments | Medium or High leadership aptitude required |
 | ME7 pathway | Blocked for Low leadership aptitude (High potential capped at ME6) |
@@ -150,7 +148,7 @@ ROA App/
 | `CurrentAppointment` | Single line of text | Current billet / role title |
 | `AppointmentStartDate` | Date and Time | Date entered current appointment |
 | `Aspiration` | Choice | SeniorTechExpert, UnitLeader, OfficerConversion, TransitionOut |
-| `PotentialRating` | Choice | Career ceiling assessment: High (projects to ME7), Medium (projects to ME6), Low (projects to ME5) |
+| `PotentialRating` | Choice | CEP — Career Employment Potential (rank ceiling): ME4, ME5, ME6, ME7, ME8 |
 | `LeadershipAptitude` | Choice | High, Medium, Low |
 | `SupervisorNotes` | Multiple lines of text | Free text feedback from supervisor |
 | `EndOfServiceDate` | Date and Time | Planned end-of-service date |
@@ -252,20 +250,20 @@ The chart is interactive — scroll to zoom, drag to pan.
 
 ## Mock Personas (10 built-in)
 
-| # | Name | Rank | Competency | Potential | Leadership | Notes |
+| # | Name | Rank | Competency | CEP | Leadership | Notes |
 |---|---|---|---|---|---|---|
-| 1 | Razif bin Hamdan | ME5 | Software Engineering | High | Medium | **OVER tenure** (80 months) |
-| 2 | Liyana bte Norzahra | ME6 | Product Management | High | High | **WARNING** (61 months) |
-| 3 | Jayakumar s/o Suppiah | ME6 | Data Analytics and AI | Medium | Medium | At **peak rank** — lateral only |
-| 4 | Marcus Teo Kah Liang | ME5 | Software Engineering | High* | Low | ME7 blocked — capped at ME6 |
-| 5 | Priya d/o Devi Nair | ME4 | Data Analytics and AI | High | High | Officer Conversion track |
-| 6 | Chow Wei Xian | ME5 | Cloud Engineering | Medium | Medium | Senior Tech Expert |
-| 7 | Nur Aisyah bte Ramli | ME4 | Product Management | High | High | Unit Leader track |
-| 8 | Kenneth Lim Boon Huat | ME6 | Software Engineering | Medium | Low | TransitionOut, near EOS |
-| 9 | Ganesh s/o Rajan | ME5 | Data Analytics and AI | High | High | Unit Leader track |
-| 10 | Fadhillah bin Azri | ME5 | Product Management | Medium | Medium | Officer Conversion track |
+| 1 | Razif bin Hamdan | ME5 | Software Engineering | ME7 | Medium | **OVER tenure** (80 months) |
+| 2 | Liyana bte Norzahra | ME6 | Product Management | ME7 | High | **WARNING** (61 months) |
+| 3 | Jayakumar s/o Suppiah | ME6 | Data Analytics and AI | ME6 | Medium | At **peak rank** — lateral only |
+| 4 | Marcus Teo Kah Liang | ME5 | Software Engineering | ME7* | Low | ME7 blocked — capped at ME6 |
+| 5 | Priya d/o Devi Nair | ME4 | Data Analytics and AI | ME7 | High | Officer Conversion track |
+| 6 | Chow Wei Xian | ME5 | Cloud Engineering | ME6 | Medium | Senior Tech Expert |
+| 7 | Nur Aisyah bte Ramli | ME4 | Product Management | ME7 | High | Unit Leader track |
+| 8 | Kenneth Lim Boon Huat | ME6 | Software Engineering | ME6 | Low | TransitionOut, near EOS |
+| 9 | Ganesh s/o Rajan | ME5 | Data Analytics and AI | ME7 | High | Unit Leader track |
+| 10 | Fadhillah bin Azri | ME5 | Product Management | ME6 | Medium | Officer Conversion track |
 
-*High potential but ME7 pathway blocked — Low leadership aptitude caps projection at ME6.
+*CEP ME7 but ME7 pathway blocked — Low leadership aptitude caps projection at ME6.
 
 ---
 

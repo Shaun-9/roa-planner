@@ -53,8 +53,11 @@ const SharePointClient = (() => {
         current_appointment: f.CurrentAppointment,
         appointment_start_date: normaliseDate(f.AppointmentStartDate),
         aspiration: f.Aspiration,
-        potential_rating: f.PotentialRating,
+        cep: f.PotentialRating,
+        leadership_aptitude: f.LeadershipAptitude,
+        competency: f.Competency,
         supervisor_notes: f.SupervisorNotes,
+        posting_history: [],
         end_of_service_date: normaliseDate(f.EndOfServiceDate),
         is_active: !!f.IsActive
       }));
@@ -68,14 +71,13 @@ const SharePointClient = (() => {
   async function getAppointments() {
     const raw = await getListItems(APP_CONFIG.LIST_APPOINTMENTS);
     return raw.map(f => ({
-      id: f.id || f.Title,
-      title: f.Title,
-      min_rank: f.MinRank,
-      max_rank: f.MaxRank,
-      specialisation: f.Specialisation,
-      category: f.Category,
-      duration_months: parseInt(f.DurationMonths, 10),
-      aspiration_tags: (f.AspirationTags || "").split(",").map(s => s.trim()).filter(Boolean)
+      id:                  f.id || f.Title,
+      title:               f.Title,
+      rank:                f.Rank,
+      competency:          f.Competency,
+      category:            f.Category,
+      duration_months:     parseInt(f.DurationMonths, 10),
+      requires_leadership: f.RequiresLeadership || "none"
     }));
   }
 

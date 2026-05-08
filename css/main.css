@@ -167,6 +167,20 @@ tbody tr:hover td { background: #f8faff; }
   color: #fff !important; border-radius: 4px !important; font-weight: 600;
 }
 
+/* Selectable future appointments — pointer cursor */
+.vis-item.appt-selectable { cursor: pointer !important; }
+.vis-item.appt-selectable:hover { filter: brightness(0.92) !important; }
+
+/* Available alternative blocks (shown when a future step is expanded) */
+.vis-item.appt-option {
+  opacity: 0.72 !important;
+  cursor: pointer !important;
+  border-style: dashed !important;
+  border-width: 2px !important;
+  border-radius: 4px !important;
+}
+.vis-item.appt-option:hover { opacity: 1 !important; }
+
 /* Projected appointments (dashed border) */
 .vis-item.appt-projected { border-style: dashed !important; border-radius: 4px !important; }
 .vis-item.appt-cat-technical  { background: #dbeafe !important; border-color: #2563eb !important; color: #1e40af !important; }
@@ -187,6 +201,13 @@ tbody tr:hover td { background: #f8faff; }
 .vis-item.eos-marker { background: none !important; border: none !important; color: #94a3b8 !important; font-size: 11px !important; }
 .vis-item.eos-marker .vis-item-dot { background: #94a3b8 !important; border-color: #94a3b8 !important; }
 
+/* ── Profile Save / Reset actions ── */
+.profile-actions { display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+.btn-primary { padding: 7px 18px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-secondary { padding: 7px 18px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.btn-secondary:hover { background: #e2e8f0; }
+
 /* ── Legend ── */
 #chart-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #64748b; }
@@ -198,6 +219,7 @@ tbody tr:hover td { background: #f8faff; }
 .legend-swatch.appt-projected.appt-cat-leadership { background: #d1fae5; border: 2px dashed #059669; }
 .legend-swatch.appt-projected.appt-cat-staff      { background: #fef9c3; border: 2px dashed #ca8a04; }
 .legend-swatch.appt-lateral.appt-cat-leadership   { background: #fce7f3; border: 3px dotted #9d174d; }
+.legend-swatch.appt-option-sw        { background: #dbeafe; border: 2px dashed #2563eb; opacity: 0.72; }
 .legend-swatch.rank-milestone-swatch { background: #f97316; width: 10px; height: 10px; border-radius: 50%; }
 .legend-swatch.eos-marker-swatch     { background: #94a3b8; width: 10px; height: 10px; border-radius: 50%; }
 
