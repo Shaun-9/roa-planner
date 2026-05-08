@@ -229,7 +229,8 @@ const MOCK_DATA = {
       end_of_service_date: "2040-07-01",
       is_active: true,
       posting_history: [
-        { appointment:"Data Engineer (D)", rank:"ME4", competency:"Data Analytics and AI", start_date:"2020-07-01", end_date:"2023-07-01" }
+        { appointment:"Data Engineer (D)",    rank:"ME4", competency:"Data Analytics and AI", start_date:"2020-07-01", end_date:"2022-01-01", type:"normal" },
+        { appointment:"Overseas Study (SUTD)", rank:"ME4", competency:"Data Analytics and AI", start_date:"2022-01-01", end_date:"2023-07-01", type:"overseas_study" }
       ]
     },
 

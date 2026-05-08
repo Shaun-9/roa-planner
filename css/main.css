@@ -229,3 +229,86 @@ tbody tr:hover td { background: #f8faff; }
 
 /* ── Error page ── */
 .error-page { display: flex; justify-content: center; align-items: center; height: 50vh; font-size: 16px; color: #64748b; }
+
+/* ── Card title with inline button ── */
+.card-title-row { display: flex; align-items: center; justify-content: space-between; }
+
+/* ── Button variants ── */
+.btn-small   { padding: 4px 12px; font-size: 12px; }
+.btn-danger  { padding: 4px 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; font-size: 12px; font-family: inherit; }
+.btn-danger:hover { background: #fecaca; }
+
+/* ── Posting history editor ── */
+.history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.history-table thead th {
+  text-align: left; padding: 6px 8px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  color: #64748b; border-bottom: 2px solid #e2e8f0;
+}
+.history-table tbody td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.history-table tbody tr:last-child td { border-bottom: none; }
+
+/* ── Selection panel ── */
+.appt-selector {
+  background: #f8faff; border: 1px solid #bfdbfe; border-radius: 8px;
+  padding: 16px 20px; margin: 14px 0;
+}
+.appt-selector.hidden { display: none; }
+.appt-selector-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
+  font-weight: 600; font-size: 14px; color: #1e40af;
+}
+.selector-close-btn {
+  background: none; border: none; font-size: 16px; color: #94a3b8; cursor: pointer; line-height: 1;
+  padding: 2px 6px; border-radius: 4px;
+}
+.selector-close-btn:hover { background: #e2e8f0; color: #475569; }
+.selector-hint  { font-size: 12px; color: #64748b; margin-bottom: 10px; }
+.selector-empty { font-size: 13px; color: #94a3b8; padding: 4px 0; }
+
+/* Appointment option cards */
+.selector-options { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.selector-card {
+  border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px;
+  cursor: pointer; min-width: 180px; max-width: 260px; background: #fff;
+  transition: border-color 0.1s, background 0.1s;
+}
+.selector-card:hover { border-color: #2563eb; background: #eff6ff; }
+.selector-card-active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 2px #bfdbfe; }
+.selector-card-name { font-size: 13px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+.selector-card-meta { font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.selector-card-badge {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  background: #2563eb; color: #fff; border-radius: 4px; padding: 1px 6px; margin-left: 4px;
+}
+
+/* Category dot inside option cards */
+.cat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.cat-technical  { background: #2563eb; }
+.cat-leadership { background: #059669; }
+.cat-staff      { background: #ca8a04; }
+
+/* Special event buttons */
+.selector-divider { font-size: 11px; color: #94a3b8; text-align: center; margin: 8px 0; }
+.selector-special-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.selector-evt-btn {
+  padding: 6px 14px; border: 1px solid #e2e8f0; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer; background: #fff;
+  color: #475569; font-family: inherit;
+}
+.selector-evt-btn:hover { border-color: #f97316; color: #9a3412; background: #fff7ed; }
+.selector-evt-active { border-color: #f97316 !important; background: #ffedd5 !important; color: #9a3412 !important; }
+.selector-auto-row { margin-top: 4px; }
+
+/* ── Special event timeline blocks ── */
+.vis-item.appt-study   { background: #fed7aa !important; border-color: #f97316 !important; color: #9a3412 !important; border-radius: 4px !important; }
+.vis-item.appt-npl     { background: #fef9c3 !important; border-color: #ca8a04 !important; color: #713f12 !important; border-radius: 4px !important; }
+.vis-item.appt-transit { background: #ede9fe !important; border-color: #7c3aed !important; color: #4c1d95 !important; border-radius: 4px !important; border-style: dashed !important; }
+
+/* Locked (user-chosen) appointment — solid border to distinguish from auto-projected */
+.vis-item.appt-locked { border-style: solid !important; border-width: 2px !important; }
+
+/* ── Legend swatches for special events ── */
+.legend-swatch.appt-study-sw   { background: #fed7aa; border: 1px solid #f97316; }
+.legend-swatch.appt-npl-sw     { background: #fef9c3; border: 1px solid #ca8a04; }
+.legend-swatch.appt-transit-sw { background: #ede9fe; border: 2px dashed #7c3aed; }

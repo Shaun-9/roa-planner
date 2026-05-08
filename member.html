@@ -22,19 +22,45 @@
       <h1 id="page-title">Career Roadmap</h1>
     </div>
 
-    <!-- Flags (tenure warnings, errors) -->
+    <!-- Flags (tenure warnings, advisory messages) -->
     <div id="flags-container"></div>
 
-    <!-- Member profile summary -->
+    <!-- Member profile (editable) -->
     <div class="card">
       <div class="card-title">Profile</div>
       <div id="member-profile">Loading…</div>
     </div>
 
-    <!-- Swimlane chart -->
+    <!-- Posting history editor (past slice) -->
     <div class="card">
-      <div class="card-title">Career Timeline</div>
+      <div class="card-title card-title-row">
+        Posting History
+        <button id="btn-add-history" class="btn-secondary btn-small">+ Add Entry</button>
+      </div>
+      <p class="profile-hint">Record completed postings and special events. Changes rebuild the projection immediately.</p>
+      <div id="history-editor">Loading…</div>
+    </div>
+
+    <!-- Swimlane chart (future planning slice) -->
+    <div class="card">
+      <div class="card-title">Career Timeline — click any future appointment to plan or change it</div>
       <div id="roadmap-container"></div>
+
+      <!-- Selection panel: shown when a future appointment is clicked -->
+      <div id="appt-selector" class="appt-selector hidden">
+        <div class="appt-selector-header">
+          <span id="selector-label">Choose appointment</span>
+          <button id="selector-close" class="selector-close-btn">✕</button>
+        </div>
+        <p class="selector-hint">Click a card to lock in this appointment. The roadmap updates immediately.</p>
+        <div id="selector-options" class="selector-options"></div>
+        <div class="selector-divider">— Or plan a special event at this step —</div>
+        <div class="selector-special-row" id="selector-special"></div>
+        <div class="selector-auto-row">
+          <button id="selector-auto" class="btn-secondary btn-small">↺ Let the engine auto-pick this step</button>
+        </div>
+      </div>
+
       <div id="chart-legend"></div>
     </div>
 
