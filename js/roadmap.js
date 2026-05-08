@@ -1,4 +1,9 @@
 const RoadmapView = (() => {
+  let _member      = null;
+  let _appointments = null;
+  let _visItems    = null;
+  let _visGroups   = null;
+
   function getServiceNumber() {
     return new URLSearchParams(window.location.search).get("id");
   }
@@ -10,7 +15,6 @@ const RoadmapView = (() => {
     TransitionOut:    "Transition Out"
   };
 
-  const APTITUDE_CSS = { High: "aptitude-high", Medium: "aptitude-medium", Low: "aptitude-low" };
   const COMPETENCY_CSS = {
     "Software Engineering":  "comp-se",
     "Cloud Engineering":     "comp-ce",
@@ -18,9 +22,35 @@ const RoadmapView = (() => {
     "Product Management":    "comp-pm"
   };
 
+  const POTENTIAL_LABEL = {
+    High:   "High → ME7",
+    Medium: "Medium → ME6",
+    Low:    "Low → ME5"
+  };
+  const POTENTIAL_CSS = {
+    High:   "potential-high",
+    Medium: "potential-medium",
+    Low:    "potential-low"
+  };
+
+  // ── Appointment options for a given rank ──────────────────────
+  function apptOptionsHtml(rank, current) {
+    const list = (_appointments || []).filter(a =>
+      a.competency === _member.competency && a.rank === rank
+    );
+    const found = list.some(a => a.title === current);
+    let html = found ? "" : `<option value="${current || ""}" selected>${current || "(none)"}</option>`;
+    html += list.map(a =>
+      `<option value="${a.title}"${a.title === current ? " selected" : ""}>${a.title}</option>`
+    ).join("");
+    return html;
+  }
+
+  // ── Flags ──────────────────────────────────────────────────────
   function renderFlags(flags) {
     const container = document.getElementById("flags-container");
-    if (!container || !flags || flags.length === 0) { if (container) container.innerHTML = ""; return; }
+    if (!container) return;
+    if (!flags || flags.length === 0) { container.innerHTML = ""; return; }
     container.innerHTML = flags.map(f => `
       <div class="flag-banner flag-${f.type}">
         <span class="flag-icon">${f.type === "over" ? "🔴" : f.type === "warning" ? "⚠️" : "ℹ️"}</span>
@@ -29,9 +59,90 @@ const RoadmapView = (() => {
     `).join("");
   }
 
+  // ── Recalculate roadmap and refresh chart in place ────────────
+  function recalculate() {
+    const roadmap = RulesEngine.buildRoadmap(_member, _appointments);
+    renderFlags(roadmap.flags);
+    const visData = RoadmapBuilder.toVisDataset(roadmap);
+    // Clear items before groups to avoid dangling group references
+    _visItems.clear();
+    _visGroups.clear();
+    _visGroups.add(visData.groups);
+    _visItems.add(visData.items);
+  }
+
+  // ── Repopulate appointment select when rank changes ───────────
+  function refreshAppointmentSelect(rank) {
+    const sel = document.getElementById("edit-appointment");
+    if (!sel) return;
+    sel.innerHTML = apptOptionsHtml(rank, _member.current_appointment);
+    // If current appointment is no longer valid, adopt the new first option
+    const firstVal = sel.options[0] ? sel.options[0].value : "";
+    if (!sel.value) { sel.value = firstVal; }
+    _member.current_appointment = sel.value;
+  }
+
+  // ── Bind change events on all editable fields ─────────────────
+  function bindEvents() {
+    document.getElementById("edit-rank").addEventListener("change", e => {
+      _member.current_rank = e.target.value;
+      refreshAppointmentSelect(e.target.value);
+      recalculate();
+    });
+
+    document.getElementById("edit-appointment").addEventListener("change", e => {
+      _member.current_appointment = e.target.value;
+      recalculate();
+    });
+
+    document.getElementById("edit-rank-date").addEventListener("change", e => {
+      if (e.target.value) { _member.rank_date = e.target.value; recalculate(); }
+    });
+
+    document.getElementById("edit-appt-start").addEventListener("change", e => {
+      if (e.target.value) { _member.appointment_start_date = e.target.value; recalculate(); }
+    });
+
+    document.getElementById("edit-eos").addEventListener("change", e => {
+      if (e.target.value) { _member.end_of_service_date = e.target.value; recalculate(); }
+    });
+
+    document.getElementById("edit-aspiration").addEventListener("change", e => {
+      _member.aspiration = e.target.value;
+      recalculate();
+    });
+
+    document.getElementById("edit-potential").addEventListener("change", e => {
+      _member.potential_rating = e.target.value;
+      recalculate();
+    });
+
+    document.getElementById("edit-aptitude").addEventListener("change", e => {
+      _member.leadership_aptitude = e.target.value;
+      recalculate();
+    });
+  }
+
+  // ── Render editable profile form ──────────────────────────────
   function renderProfile(member) {
     const el = document.getElementById("member-profile");
     if (!el) return;
+
+    const rankOpts = RULES.rank_order.map(r =>
+      `<option value="${r}"${r === member.current_rank ? " selected" : ""}>${r}</option>`
+    ).join("");
+
+    const aspirationOpts = Object.entries(ASPIRATION_LABELS).map(([k, v]) =>
+      `<option value="${k}"${k === member.aspiration ? " selected" : ""}>${v}</option>`
+    ).join("");
+
+    const potentialOpts = ["High", "Medium", "Low"].map(p =>
+      `<option value="${p}"${p === member.potential_rating ? " selected" : ""}>${POTENTIAL_LABEL[p]}</option>`
+    ).join("");
+
+    const aptitudeOpts = ["High", "Medium", "Low"].map(a =>
+      `<option value="${a}"${a === member.leadership_aptitude ? " selected" : ""}>${a}</option>`
+    ).join("");
 
     const historyHtml = (member.posting_history || []).length > 0 ? `
       <div class="posting-history">
@@ -49,6 +160,7 @@ const RoadmapView = (() => {
     ` : "";
 
     el.innerHTML = `
+      <div class="profile-hint">Edit any field below — the career projection updates automatically.</div>
       <div class="profile-grid">
         <div class="profile-field">
           <label>Name</label>
@@ -59,32 +171,40 @@ const RoadmapView = (() => {
           <span>${member.service_number}</span>
         </div>
         <div class="profile-field">
-          <label>Current Rank</label>
-          <span class="rank-badge rank-${member.current_rank.toLowerCase()}">${member.current_rank}</span>
-        </div>
-        <div class="profile-field">
           <label>Competency</label>
           <span class="comp-badge ${COMPETENCY_CSS[member.competency] || ''}">${member.competency}</span>
         </div>
         <div class="profile-field">
+          <label>Current Rank</label>
+          <select id="edit-rank" class="profile-select">${rankOpts}</select>
+        </div>
+        <div class="profile-field">
+          <label>Rank Date</label>
+          <input type="date" id="edit-rank-date" class="profile-input" value="${member.rank_date}" />
+        </div>
+        <div class="profile-field">
           <label>Current Appointment</label>
-          <span>${member.current_appointment}</span>
+          <select id="edit-appointment" class="profile-select">${apptOptionsHtml(member.current_rank, member.current_appointment)}</select>
+        </div>
+        <div class="profile-field">
+          <label>Appt. Start Date</label>
+          <input type="date" id="edit-appt-start" class="profile-input" value="${member.appointment_start_date}" />
         </div>
         <div class="profile-field">
           <label>Aspiration</label>
-          <span>${ASPIRATION_LABELS[member.aspiration] || member.aspiration}</span>
+          <select id="edit-aspiration" class="profile-select">${aspirationOpts}</select>
         </div>
         <div class="profile-field">
-          <label>Estimated Max Rank</label>
-          <span class="rank-badge rank-${member.potential_rating.toLowerCase()}">${member.potential_rating}</span>
+          <label>Potential</label>
+          <select id="edit-potential" class="profile-select">${potentialOpts}</select>
         </div>
         <div class="profile-field">
           <label>Leadership Aptitude</label>
-          <span class="aptitude-badge ${APTITUDE_CSS[member.leadership_aptitude] || ''}">${member.leadership_aptitude}</span>
+          <select id="edit-aptitude" class="profile-select">${aptitudeOpts}</select>
         </div>
         <div class="profile-field">
           <label>End of Service</label>
-          <span>${member.end_of_service_date}</span>
+          <input type="date" id="edit-eos" class="profile-input" value="${member.end_of_service_date}" />
         </div>
       </div>
       ${member.supervisor_notes ? `
@@ -95,16 +215,18 @@ const RoadmapView = (() => {
       ` : ""}
       ${historyHtml}
     `;
+
+    bindEvents();
   }
 
+  // ── Render vis.js Timeline ─────────────────────────────────────
   function renderChart(visData) {
     const container = document.getElementById("roadmap-container");
     if (!container) return;
 
-    const items  = new vis.DataSet(visData.items);
-    const groups = new vis.DataSet(visData.groups);
+    _visItems  = new vis.DataSet(visData.items);
+    _visGroups = new vis.DataSet(visData.groups);
 
-    // Default view: 5 years before today → 12 years ahead
     const today = new Date();
     const viewStart = new Date(today); viewStart.setFullYear(viewStart.getFullYear() - 5);
     const viewEnd   = new Date(today); viewEnd.setFullYear(viewEnd.getFullYear() + 12);
@@ -115,14 +237,14 @@ const RoadmapView = (() => {
       orientation:     { axis: "top" },
       start:           viewStart,
       end:             viewEnd,
-      zoomMin:         1000 * 60 * 60 * 24 * 30,          // 1 month
-      zoomMax:         1000 * 60 * 60 * 24 * 365 * 35,    // 35 years
+      zoomMin:         1000 * 60 * 60 * 24 * 30,
+      zoomMax:         1000 * 60 * 60 * 24 * 365 * 35,
       groupOrder:      "id",
       tooltip:         { followMouse: true, overflowMethod: "flip" },
       margin:          { item: { horizontal: 0, vertical: 4 } }
     };
 
-    new vis.Timeline(container, items, groups, options);
+    new vis.Timeline(container, _visItems, _visGroups, options);
   }
 
   function renderLegend() {
@@ -140,6 +262,7 @@ const RoadmapView = (() => {
     `;
   }
 
+  // ── Entry point ───────────────────────────────────────────────
   async function init() {
     const serviceNumber = getServiceNumber();
     if (!serviceNumber) {
@@ -158,12 +281,16 @@ const RoadmapView = (() => {
         return;
       }
 
+      // Keep a mutable copy so edits don't corrupt the data cache
+      _member      = Object.assign({}, member);
+      _appointments = appointments;
+
       document.title = `${member.name} — ROA`;
       document.getElementById("page-title").textContent = `${member.name} — Career Roadmap`;
 
-      renderProfile(member);
+      renderProfile(_member);
 
-      const roadmap = RulesEngine.buildRoadmap(member, appointments);
+      const roadmap = RulesEngine.buildRoadmap(_member, _appointments);
       renderFlags(roadmap.flags);
 
       const visData = RoadmapBuilder.toVisDataset(roadmap);

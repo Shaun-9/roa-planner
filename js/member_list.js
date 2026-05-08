@@ -14,6 +14,12 @@ const MemberList = (() => {
     Low:    "aptitude-low"
   };
 
+  const POTENTIAL_CSS = {
+    High:   "potential-high",
+    Medium: "potential-medium",
+    Low:    "potential-low"
+  };
+
   const COMPETENCY_CSS = {
     "Software Engineering":   "comp-se",
     "Cloud Engineering":      "comp-ce",
@@ -37,7 +43,7 @@ const MemberList = (() => {
         <td><span class="rank-badge rank-${m.current_rank.toLowerCase()}">${m.current_rank}</span></td>
         <td><span class="comp-badge ${COMPETENCY_CSS[m.competency] || ''}">${m.competency}</span></td>
         <td>${ASPIRATION_LABELS[m.aspiration] || m.aspiration}</td>
-        <td>${m.potential_rating}</td>
+        <td><span class="potential-badge ${POTENTIAL_CSS[m.potential_rating] || ''}">${m.potential_rating}</span></td>
         <td><span class="aptitude-badge ${APTITUDE_CSS[m.leadership_aptitude] || ''}">${m.leadership_aptitude}</span></td>
         <td>${m.end_of_service_date}</td>
       </tr>

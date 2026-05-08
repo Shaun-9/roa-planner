@@ -29,7 +29,7 @@ const RulesEngine = (() => {
       !prefs.avoid.includes(a.category)
     );
 
-    // Prefer appointments not already used in this career (avoid repetition in projections)
+    // Prefer appointments not already used in this member's full career history
     const fresh = candidates.filter(a => !usedTitles.has(a.title));
     if (fresh.length > 0) candidates = fresh;
 
@@ -46,24 +46,28 @@ const RulesEngine = (() => {
     const eos = new Date(member.end_of_service_date);
     const rankOrder = RULES.rank_order;
 
+    // Resolve Low/Medium/High potential to a rank ceiling
+    const POTENTIAL_TO_RANK = RULES.potential_to_rank || {};
+    const potentialRank = POTENTIAL_TO_RANK[member.potential_rating] || member.potential_rating;
+
     const currentRankIdx = rankOrder.indexOf(member.current_rank);
-    const potentialIdx   = rankOrder.indexOf(member.potential_rating);
+    const potentialIdx   = rankOrder.indexOf(potentialRank);
     const me7Idx         = rankOrder.indexOf("ME7");
 
-    // Cap effective potential at ME6 if leadership aptitude is Low (cannot reach ME7)
+    // Low leadership aptitude blocks ME7 even when potential is High
     const memberAptitude = APTITUDE_LEVEL[member.leadership_aptitude] || 0;
-    const effectivePotentialIdx = (potentialIdx === me7Idx && memberAptitude < 1)
+    const effectivePotentialIdx = (potentialRank === "ME7" && memberAptitude < 1)
       ? me7Idx - 1
       : potentialIdx;
 
     const rankDate  = new Date(member.rank_date);
     const apptStart = new Date(member.appointment_start_date);
 
-    const currentTIG      = monthsBetween(rankDate, today);
+    const currentTIG       = monthsBetween(rankDate, today);
     const apptMonthsServed = monthsBetween(apptStart, today);
 
-    const minAppt  = RULES.appointment_rules.min_duration_months;   // 36
-    const maxAppt  = RULES.appointment_rules.max_duration_months;   // 72
+    const minAppt  = RULES.appointment_rules.min_duration_months;    // 36
+    const maxAppt  = RULES.appointment_rules.max_duration_months;    // 72
     const warnAppt = RULES.appointment_rules.warning_threshold_months; // 60
 
     const roadmap = { member, flags: [], appointments: [], events: [] };
@@ -94,10 +98,10 @@ const RulesEngine = (() => {
     }
 
     // ── ME7 pathway advisory for Low leadership aptitude ─────
-    if (potentialIdx === me7Idx && memberAptitude < 1) {
+    if (potentialRank === "ME7" && memberAptitude < 1) {
       roadmap.flags.push({
         type: "info",
-        message: `ME7 pathway not recommended: Low leadership aptitude assessment. Career planning is capped at ME6. CO 8X is also not available.`
+        message: `ME7 pathway not recommended: Low leadership aptitude assessment. Career projection is capped at ME6. CO 8X is also not available.`
       });
     }
 
@@ -105,15 +109,15 @@ const RulesEngine = (() => {
     let cursorDate;
 
     if (currentRankIdx < effectivePotentialIdx) {
-      // Below effective peak — promotion is on the horizon
-      // Must satisfy both: TIG ≥ 36 months AND appointment ≥ 36 months
+      // Below effective peak — projection promotes upward
+      // Must satisfy: TIG ≥ min AND appointment ≥ min
       const monthsToTIG  = Math.max(0, minAppt - currentTIG);
       const monthsToAppt = Math.max(0, minAppt - apptMonthsServed);
       const monthsToPromotion = Math.max(monthsToTIG, monthsToAppt);
       const promotionDate = addMonths(today, monthsToPromotion);
       cursorDate = promotionDate >= eos ? eos : promotionDate;
     } else {
-      // At or past effective peak — show remaining time in appointment (max 72 months from start)
+      // At or past effective peak — lateral from appointment max
       const apptEndMax = addMonths(apptStart, maxAppt);
       cursorDate = apptEndMax >= eos ? eos : apptEndMax;
     }
@@ -129,7 +133,13 @@ const RulesEngine = (() => {
 
     // ── Walk forward ─────────────────────────────────────────
     const competencyAppts = appointments.filter(a => a.competency === member.competency);
-    const usedTitles = new Set([member.current_appointment]);
+
+    // Seed usedTitles from ALL prior career history so laterals never repeat any past posting
+    const usedTitles = new Set([
+      member.current_appointment,
+      ...(member.posting_history || []).map(ph => ph.appointment)
+    ]);
+
     let cursorRankIdx = currentRankIdx;
 
     while (cursorDate < eos) {

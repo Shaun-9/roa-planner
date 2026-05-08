@@ -91,11 +91,37 @@ tbody tr:hover td { background: #f8faff; }
 .aptitude-medium { background: #fef9c3; color: #854d0e; }
 .aptitude-low    { background: #fee2e2; color: #991b1b; }
 
+/* ── Potential Badges ── */
+.potential-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 600;
+}
+.potential-high   { background: #dbeafe; color: #1e40af; }
+.potential-medium { background: #e0e7ff; color: #3730a3; }
+.potential-low    { background: #f1f5f9; color: #475569; }
+
 /* ── Member Profile ── */
+.profile-hint { font-size: 12px; color: #94a3b8; margin-bottom: 16px; font-style: italic; }
 .profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
 .profile-field { display: flex; flex-direction: column; gap: 4px; }
 .profile-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
 .profile-field span { font-size: 14px; color: #1a1a2e; }
+
+/* Editable profile controls */
+.profile-select,
+.profile-input {
+  padding: 5px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+}
+.profile-select:focus,
+.profile-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
 
 .supervisor-notes { margin-top: 16px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
 .supervisor-notes label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; display: block; margin-bottom: 6px; }

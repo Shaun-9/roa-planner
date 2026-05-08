@@ -1,6 +1,13 @@
 const RULES = {
   rank_order: ["ME4", "ME5", "ME6", "ME7"],
 
+  // Maps the three-level potential rating to a rank ceiling
+  potential_to_rank: {
+    "Low":    "ME5",
+    "Medium": "ME6",
+    "High":   "ME7"
+  },
+
   rank_thresholds: {
     "ME5": { min_tig_months: 36 },
     "ME6": { min_tig_months: 36 },
