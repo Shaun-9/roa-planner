@@ -230,6 +230,32 @@ tbody tr:hover td { background: #f8faff; }
 /* ── Error page ── */
 .error-page { display: flex; justify-content: center; align-items: center; height: 50vh; font-size: 16px; color: #64748b; }
 
+/* ── Year navigation slider ── */
+.timeline-slider-wrapper {
+  padding: 10px 4px 0;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 8px;
+}
+.slider-track-row { display: flex; align-items: center; gap: 10px; }
+.slider-hint { font-size: 11px; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
+.timeline-slider {
+  flex: 1; cursor: pointer; height: 4px;
+  accent-color: #2563eb;
+  -webkit-appearance: none; appearance: none;
+}
+.timeline-slider::-webkit-slider-runnable-track { height: 4px; background: #e2e8f0; border-radius: 2px; }
+.timeline-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #2563eb; margin-top: -6px; cursor: pointer; }
+.timeline-slider::-moz-range-track { height: 4px; background: #e2e8f0; border-radius: 2px; }
+.timeline-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #2563eb; border: none; cursor: pointer; }
+.slider-year-display { font-size: 13px; font-weight: 700; color: #2563eb; min-width: 36px; text-align: right; flex-shrink: 0; }
+
+/* Tick marks below slider */
+.slider-ticks { position: relative; height: 16px; margin: 2px 0 4px; padding: 0 8px; }
+.slider-tick {
+  position: absolute; transform: translateX(-50%);
+  font-size: 10px; color: #94a3b8;
+}
+
 /* ── Card title with inline button ── */
 .card-title-row { display: flex; align-items: center; justify-content: space-between; }
 

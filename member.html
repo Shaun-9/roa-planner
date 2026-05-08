@@ -46,6 +46,16 @@
       <div class="card-title">Career Timeline — click any future appointment to plan or change it</div>
       <div id="roadmap-container"></div>
 
+      <!-- Year navigation slider -->
+      <div class="timeline-slider-wrapper">
+        <div class="slider-track-row">
+          <span class="slider-hint">Drag chart to pan &nbsp;·&nbsp; slide to jump to year</span>
+          <input type="range" id="timeline-slider" class="timeline-slider" min="2010" max="2045" step="1" value="2025" />
+          <span class="slider-year-display" id="slider-year-display">2025</span>
+        </div>
+        <div class="slider-ticks" id="slider-ticks"></div>
+      </div>
+
       <!-- Selection panel: shown when a future appointment is clicked -->
       <div id="appt-selector" class="appt-selector hidden">
         <div class="appt-selector-header">

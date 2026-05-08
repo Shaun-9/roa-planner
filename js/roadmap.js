@@ -446,8 +446,9 @@ const RoadmapView = (() => {
     _visGroups = new vis.DataSet(visData.groups);
 
     const today = new Date();
-    const viewStart = new Date(today); viewStart.setFullYear(viewStart.getFullYear() - 5);
-    const viewEnd   = new Date(today); viewEnd.setFullYear(viewEnd.getFullYear() + 12);
+    // Show a 10-year window centred around today. User pans with the slider or by dragging.
+    const viewStart = new Date(today); viewStart.setFullYear(viewStart.getFullYear() - 2);
+    const viewEnd   = new Date(today); viewEnd.setFullYear(viewEnd.getFullYear() + 8);
 
     const options = {
       stack:           true,
@@ -455,8 +456,8 @@ const RoadmapView = (() => {
       orientation:     { axis: "top" },
       start:           viewStart,
       end:             viewEnd,
-      zoomMin:         1000 * 60 * 60 * 24 * 30,
-      zoomMax:         1000 * 60 * 60 * 24 * 365 * 35,
+      zoomable:        false,   // scroll/pinch zoom disabled — use the year slider instead
+      moveable:        true,    // drag-to-pan still works
       groupOrder:      "id",
       tooltip:         { followMouse: true, overflowMethod: "flip" },
       margin:          { item: { horizontal: 0, vertical: 4 } },
@@ -465,6 +466,51 @@ const RoadmapView = (() => {
 
     _timeline = new vis.Timeline(container, _visItems, _visGroups, options);
     _timeline.on("click", handleTimelineClick);
+  }
+
+  // ── Year slider — pans the timeline without zooming ───────────
+  function initSlider(member) {
+    const slider  = document.getElementById("timeline-slider");
+    const display = document.getElementById("slider-year-display");
+    if (!slider || !_timeline) return;
+
+    const careerStart = new Date(member.service_start_date || member.rank_date);
+    const eos         = new Date(member.end_of_service_date);
+    const minYear = careerStart.getFullYear() - 1;
+    const maxYear = eos.getFullYear() + 1;
+    const curYear = new Date().getFullYear();
+
+    slider.min   = minYear;
+    slider.max   = maxYear;
+    slider.value = curYear;
+    if (display) display.textContent = curYear;
+
+    // Generate year tick marks below the slider
+    const ticksEl = document.getElementById("slider-ticks");
+    if (ticksEl) {
+      const step = Math.ceil((maxYear - minYear) / 8); // ~8 labels across
+      let ticksHtml = "";
+      for (let y = minYear; y <= maxYear; y += step) {
+        const pct = ((y - minYear) / (maxYear - minYear)) * 100;
+        ticksHtml += `<span class="slider-tick" style="left:${pct}%">${y}</span>`;
+      }
+      ticksEl.innerHTML = ticksHtml;
+    }
+
+    slider.addEventListener("input", () => {
+      const yr = parseInt(slider.value, 10);
+      if (display) display.textContent = yr;
+      _timeline.moveTo(new Date(yr, 6, 1), { animation: { duration: 180, easingFunction: "easeInOutQuad" } });
+    });
+
+    // Keep slider in sync when the user drags the chart
+    _timeline.on("rangechange", props => {
+      if (!props.byUser) return;
+      const center = new Date((new Date(props.start).getTime() + new Date(props.end).getTime()) / 2);
+      const yr = center.getFullYear();
+      slider.value = yr;
+      if (display) display.textContent = yr;
+    });
   }
 
   function renderLegend() {
@@ -542,6 +588,7 @@ const RoadmapView = (() => {
 
       const visData = RoadmapBuilder.toVisDataset(_lastRoadmap);
       renderChart(visData);
+      initSlider(_member);
       renderLegend();
 
     } catch (err) {
